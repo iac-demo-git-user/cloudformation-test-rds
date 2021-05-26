@@ -270,7 +270,7 @@
                     "Ref": "DBPassword"
                 },
                 "PubliclyAccessible": true,
-                "BackupRetentionPeriod":6,
+                "BackupRetentionPeriod":7,
                 "MonitoringInterval": "60",
                 "MonitoringRoleArn": "arn:aws:iam::123456789012:role/rds-monitoring-role"
             }
