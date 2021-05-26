@@ -1,7 +1,28 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "AWS CloudFormation Sample Template for creating an Amazon RDS DB instance: Sample template showing"
+    "Description": "For Checkov Fail Test 01 From CEN_AWS_1 to CEN_AWS_21, CEN_AWS_33 also CEN_AWS_53 to CEN_AWS_57",
     "Parameters": {
+        "Key": {
+            "Type": "String"
+        },
+        "Value": {
+            "Type": "String"
+        },
+        "LatestAmiId": {
+            "Description": "Region specific image from the Parameter Store",
+            "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+            "Default": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+        },
+        "InstanceType": {
+            "Description": "Amazon EC2 instance type for the instances",
+            "Type": "String",
+            "AllowedValues": [
+                "t3.micro",
+                "t3.small",
+                "t3.medium"
+            ],
+            "Default": "t3.micro"
+        },
         "DBInstanceID": {
             "Default": "mydbinstance",
             "Description": "My database instance",
@@ -9,8 +30,10 @@
             "MinLength": "1",
             "MaxLength": "63",
             "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
-
             "ConstraintDescription": "Must begin with a letter and must not end with a hyphen or contain two consecutive hyphens."
+        },
+        "myVPC": {
+            "Type": "String"
         },
         "DBName": {
             "Default": "mydb",
@@ -23,7 +46,6 @@
         },
         "DBInstanceClass": {
             "Default": "db.m5.large",
-
             "Description": "DB instance class",
             "Type": "String",
             "ConstraintDescription": "Must select a valid DB instance type."
@@ -34,7 +56,6 @@
             "Type": "Number",
             "MinValue": "5",
             "MaxValue": "1024",
-
             "ConstraintDescription": "must be between 20 and 65536 GiB."
         },
         "DBUsername": {
@@ -46,7 +67,6 @@
             "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
             "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
         },
-
         "DBPassword": {
             "NoEcho": "true",
             "Description": "Password MySQL database access",
@@ -58,13 +78,180 @@
         }
     },
     "Resources": {
-        "MyDB": {
+        "CEN_AWS_2_ALB_HTTPS": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "Type": "redirect",
+                        "RedirectConfig": {
+                            "Protocol": "HTTP",
+                            "Port": 80,
+                            "Host": "#{host}",
+                            "Path": "/#{path}",
+                            "Query": "#{query}",
+                            "StatusCode": "HTTP_301"
+                        }
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "myLoadBalancer"
+                },
+                "Port": 80,
+                "Protocol": "HTTP"
+            }
+        },
+        "CEN_AWS_3_EBS_Encrypted": {
+            "Type": "AWS::EC2::Volume",
+            "Properties": {
+                "Size": 100,
+                "DeletionPolicy": "Snapshot",
+                "Tags": [
+                    {
+                        "Key": "MyTag",
+                        "Value": "TagValue"
+                    }
+                ]
+            }
+        },
+        "CEN_AWS_5_Elasticsearch_Encrypted_AT_Rest": {
+            "Type": "AWS::Elasticsearch::Domain",
+            "Properties": {
+                "DomainName": "test",
+                "ElasticsearchClusterConfig": {
+                    "DedicatedMasterEnabled": "true",
+                    "InstanceCount": "2",
+                    "ZoneAwarenessEnabled": "true",
+                    "InstanceType": "m3.medium.elasticsearch",
+                    "DedicatedMasterType": "m3.medium.elasticsearch",
+                    "DedicatedMasterCount": "3"
+                },
+                "EBSOptions": {
+                    "EBSEnabled": true,
+                    "Iops": 0,
+                    "VolumeSize": 20,
+                    "VolumeType": "gp2"
+                },
+                "SnapshotOptions": {
+                    "AutomatedSnapshotStartHour": "0"
+                },
+                "AccessPolicies": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "arn:aws:iam::123456789012:user/es-user"
+                            },
+                            "Action": "es:*",
+                            "Resource": "arn:aws:es:us-east-1:123456789012:domain/test/*"
+                        }
+                    ]
+                },
+                "AdvancedOptions": {
+                    "rest.action.multi.allow_explicit_index": "true"
+                }
+            }
+        },
+        "CEN_AWS_6_Elasticsearch_Encrypted_Node": {
+            "Type": "AWS::Elasticsearch::Domain",
+            "Properties": {
+                "DomainName": "test",
+                "ElasticsearchClusterConfig": {
+                    "DedicatedMasterEnabled": "true",
+                    "InstanceCount": "2",
+                    "ZoneAwarenessEnabled": "true",
+                    "InstanceType": "m3.medium.elasticsearch",
+                    "DedicatedMasterType": "m3.medium.elasticsearch",
+                    "DedicatedMasterCount": "3"
+                },
+                "EncryptionAtRestOptions": {
+                    "Enabled": false,
+                    "KmsKeyId": "1a2a3a4-1a2a-3a4a-5a6a-1a2a3a4a5a6a"
+                },
+                "EBSOptions": {
+                    "EBSEnabled": true,
+                    "Iops": 0,
+                    "VolumeSize": 20,
+                    "VolumeType": "gp2"
+                },
+                "SnapshotOptions": {
+                    "AutomatedSnapshotStartHour": "0"
+                },
+                "AccessPolicies": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "arn:aws:iam::123456789012:user/es-user"
+                            },
+                            "Action": "es:*",
+                            "Resource": "arn:aws:es:us-east-1:123456789012:domain/test/*"
+                        }
+                    ]
+                },
+                "AdvancedOptions": {
+                    "rest.action.multi.allow_explicit_index": "true"
+                }
+            }
+        },
+        "CEN_AWS_7_33_CMK_Rotation": {
+            "Type": "AWS::KMS::Key",
+            "Properties": {
+                "KeyPolicy": {
+                    "Version": "2012-10-17",
+                    "Id": "key-default-1",
+                    "Statement": [
+                        {
+                            "Sid": "Enable IAM User Permissions",
+                            "Effect": "Allow",
+                            "Principal": "*",
+                            "Action": "kms:*",
+                            "Resource": "*"
+                        }
+                    ]
+                }
+            }
+        },
+        "CEN_AWS_8_Launch_Configuration_EBS_Encrypted": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "ImageId": {
+                    "Ref": "LatestAmiId"
+                },
+                "SecurityGroups": [
+                    {
+                        "Ref": "myEC2SecurityGroup"
+                    }
+                ],
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/sda1",
+                        "Ebs": {
+                            "VolumeSize": 30,
+                            "VolumeType": "gp2"
+                        }
+                    },
+                    {
+                        "DeviceName": "/dev/sdm",
+                        "Ebs": {
+                            "VolumeSize": 100,
+                            "DeleteOnTermination": "false"
+                        }
+                    }
+                ]
+            }
+        },
+        "CEN_AWS_16_17_RDS_Encrypted_Rest_NotPublic": {
             "Type": "AWS::RDS::DBInstance",
             "Properties": {
                 "DBInstanceIdentifier": {
                     "Ref": "DBInstanceID"
                 },
-
                 "DBName": {
                     "Ref": "DBName"
                 },
@@ -77,15 +264,22 @@
                 "Engine": "MySQL",
                 "EngineVersion": "8.0.16",
                 "MasterUsername": {
-
                     "Ref": "DBUsername"
                 },
                 "MasterUserPassword": {
                     "Ref": "DBPassword"
-
                 },
+                "PubliclyAccessible": true,
                 "MonitoringInterval": "60",
-                "MonitoringRoleArn": "arn:aws:iam::1233456789012:role/rds-monitoring-role"
+                "MonitoringRoleArn": "arn:aws:iam::123456789012:role/rds-monitoring-role"
+            }
+        },
+        "CEN_AWS_18_19_20_21_53_54_55_56_57_S3": {
+            "Type": "AWS::S3::Bucket",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+                "AccessControl": "PublicReadWrite",
+                "BucketName": "DOC-EXAMPLE-BUCKET"
             }
         }
     }
