@@ -15,7 +15,7 @@
               "Iops" : 200,
               "DeleteOnTermination" : false,
               "VolumeSize" : 20,
-              "Encrypted":true,
+              "Encrypted":false,
             },
             
           },
@@ -36,7 +36,7 @@
    "Properties" : {
       "Size" : "100",
       "AvailabilityZone" : { "Fn::GetAtt" : [ "MyEC2Instance", "AvailabilityZone" ] },
-      "Encrypted":true,
+      "Encrypted":false,
     }
    }
   }
