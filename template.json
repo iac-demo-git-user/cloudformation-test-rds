@@ -1,43 +1,674 @@
 {
-  "AWSTemplateFormatVersion" : "2010-09-09",
-  "Description" : "A sample template",
-  "Resources" : {
-    "MyEC2Instance" : {
-      "Type" : "AWS::EC2::Instance",
-      "Properties" : {
-        "ImageId" : "ami-0ff8a91507f77f867",
-        "InstanceType" : "t2.micro",
-        "BlockDeviceMappings" : [
-          {
-            "DeviceName" : "/dev/sdm",
-            "Ebs" : {
-              "VolumeType" : "io1",
-              "Iops" : 200,
-              "DeleteOnTermination" : false,
-              "VolumeSize" : 20,
-              "Encrypted":false,
-            },
-            
-          },
-            
-        ]
-      }
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "For Checkov Fail Test 02 From CEN_AWS_23 to CEN_AWS_82",
+    "Parameters": {
+        "IAMUserARN": {
+            "Type": "String"
+        },
+        "NeptuneDBSG": {
+            "Type": "String"
+        },
+        "BackupRetentionPeriod": {
+            "Type": "String"
+        },
+        "DBClusterIdentifier": {
+            "Type": "String"
+        },
+        "NeptuneDBClusterParameterGroup": {
+            "Type": "String"
+        },
+        "NeptuneDBSubnetGroup": {
+            "Type": "String"
+        },
+        "IAMAuthEnabled": {
+            "Type": "String"
+        },
+        "Port": {
+            "Type": "String"
+        },
+        "NeptuneDBClusterPreferredBackupWindow": {
+            "Type": "String"
+        },
+        "NeptuneDBClusterPreferredMaintenanceWindow": {
+            "Type": "String"
+        },
+        "subnetGroupClu": {
+            "Type": "String"
+        },
+        "MyApi": {
+            "Type": "String"
+        },
+        "MyRestApi": {
+            "Type": "String"
+        },
+        "TestDeployment": {
+            "Type": "String"
+        },
+        "MyDocumentationVersion": {
+            "Type": "String"
+        },
+        "ClientCertificate": {
+            "Type": "String"
+        }
     },
-    "NewVolume" : {
-   "Type" : "AWS::EC2::Volume",
-   "Properties" : {
-      "Size" : "100",
-      "AvailabilityZone" : { "Fn::GetAtt" : [ "MyEC2Instance", "AvailabilityZone" ] },
-      "Encrypted":true,
+    "Resources": {
+        "CEN_AWS_23_24_25_SG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "VpcId": "vpc-1a2b3c4d",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 80,
+                        "ToPort": 80,
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 22,
+                        "ToPort": 22,
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 3389,
+                        "ToPort": 3389,
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ],
+                "SecurityGroupEgress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 80,
+                        "ToPort": 80,
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "CEN_AWS_23_OutboundRule": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "IpProtocol": "tcp",
+                "FromPort": 22,
+                "ToPort": 22,
+                "DestinationSecurityGroupId": {
+                    "Fn::GetAtt": [
+                        "CEN_AWS_23_SG",
+                        "GroupId"
+                    ]
+                },
+                "GroupId": {
+                    "Fn::GetAtt": [
+                        "CEN_AWS_23_SG",
+                        "GroupId"
+                    ]
+                }
+            }
+        },
+        "CEN_AWS_23_InboundRule": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "IpProtocol": "tcp",
+                "FromPort": 22,
+                "ToPort": 22,
+                "CidrIp": "0.0.0.0/0",
+                "SourceSecurityGroupId": {
+                    "Fn::GetAtt": [
+                        "CEN_AWS_23_SG",
+                        "GroupId"
+                    ]
+                },
+                "GroupId": {
+                    "Fn::GetAtt": [
+                        "CEN_AWS_23_SG",
+                        "GroupId"
+                    ]
+                }
+            }
+        },
+        "CEN_AWS_26_SNS_Encrypted": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "TopicName": "SampleTopic"
+            }
+        },
+        "CEN_AWS_27_SQS_Encrypted": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "QueueName": "SampleQueue"
+            }
+        },
+        "CEN_AWS_28_DynamoDB_PIT_Recovery": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "Album",
+                        "AttributeType": "S"
+                    },
+                    {
+                        "AttributeName": "Artist",
+                        "AttributeType": "S"
+                    },
+                    {
+                        "AttributeName": "Sales",
+                        "AttributeType": "N"
+                    },
+                    {
+                        "AttributeName": "NumberOfSongs",
+                        "AttributeType": "N"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "Album",
+                        "KeyType": "HASH"
+                    },
+                    {
+                        "AttributeName": "Artist",
+                        "KeyType": "RANGE"
+                    }
+                ],
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": "5",
+                    "WriteCapacityUnits": "5"
+                },
+                "TableName": "myTableName",
+                "GlobalSecondaryIndexes": [
+                    {
+                        "IndexName": "myGSI",
+                        "KeySchema": [
+                            {
+                                "AttributeName": "Sales",
+                                "KeyType": "HASH"
+                            },
+                            {
+                                "AttributeName": "Artist",
+                                "KeyType": "RANGE"
+                            }
+                        ],
+                        "Projection": {
+                            "NonKeyAttributes": [
+                                "Album",
+                                "NumberOfSongs"
+                            ],
+                            "ProjectionType": "INCLUDE"
+                        },
+                        "ProvisionedThroughput": {
+                            "ReadCapacityUnits": "5",
+                            "WriteCapacityUnits": "5"
+                        }
+                    },
+                    {
+                        "IndexName": "myGSI2",
+                        "KeySchema": [
+                            {
+                                "AttributeName": "NumberOfSongs",
+                                "KeyType": "HASH"
+                            },
+                            {
+                                "AttributeName": "Sales",
+                                "KeyType": "RANGE"
+                            }
+                        ],
+                        "Projection": {
+                            "NonKeyAttributes": [
+                                "Album",
+                                "Artist"
+                            ],
+                            "ProjectionType": "INCLUDE"
+                        },
+                        "ProvisionedThroughput": {
+                            "ReadCapacityUnits": "5",
+                            "WriteCapacityUnits": "5"
+                        }
+                    }
+                ],
+                "LocalSecondaryIndexes": [
+                    {
+                        "IndexName": "myLSI",
+                        "KeySchema": [
+                            {
+                                "AttributeName": "Album",
+                                "KeyType": "HASH"
+                            },
+                            {
+                                "AttributeName": "Sales",
+                                "KeyType": "RANGE"
+                            }
+                        ],
+                        "Projection": {
+                            "NonKeyAttributes": [
+                                "Artist",
+                                "NumberOfSongs"
+                            ],
+                            "ProjectionType": "INCLUDE"
+                        }
+                    }
+                ]
+            }
+        },
+        "CEN_AWS_29_30_31_Replication_Group_Encrypted": {
+            "Type": "AWS::ElastiCache::ReplicationGroup",
+            "Properties": {
+                "ReplicationGroupDescription": "my description",
+                "NumCacheClusters": "2",
+                "Engine": "redis",
+                "CacheNodeType": "cache.m3.medium",
+                "AutoMinorVersionUpgrade": "true",
+                "AutomaticFailoverEnabled": "true",
+                "CacheSubnetGroupName": "subnetgroup",
+                "EngineVersion": "2.8.6",
+                "PreferredMaintenanceWindow": "wed:09:25-wed:22:30",
+                "SnapshotRetentionLimit": "4",
+                "SnapshotWindow": "03:30-05:30"
+            }
+        },
+        "CEN_AWS_32_51_ECR_Public": {
+            "Type": "AWS::ECR::Repository",
+            "Properties": {
+                "RepositoryName": "test-repository",
+                "RepositoryPolicyText": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Sid": "AllowPushPull",
+                            "Effect": "Allow",
+                            "Principal": "*",
+                            "Action": [
+                                "ecr:GetDownloadUrlForLayer",
+                                "ecr:BatchGetImage",
+                                "ecr:BatchCheckLayerAvailability",
+                                "ecr:PutImage",
+                                "ecr:InitiateLayerUpload",
+                                "ecr:UploadLayerPart",
+                                "ecr:CompleteLayerUpload"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "CEN_AWS_34_68_86_CloudFront_HTTPS_WAF_Access_Logging": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Origins": [
+                        {
+                            "DomainName": "mybucket.s3.amazonaws.com",
+                            "Id": "myS3Origin",
+                            "S3OriginConfig": {
+                                "OriginAccessIdentity": "origin-access-identity/cloudfront/E127EXAMPLE51Z"
+                            }
+                        }
+                    ],
+                    "Enabled": "true",
+                    "Comment": "Some comment",
+                    "DefaultRootObject": "index.html",
+                    "Aliases": [
+                        "mysite.example.com",
+                        "yoursite.example.com"
+                    ],
+                    "DefaultCacheBehavior": {
+                        "AllowedMethods": [
+                            "DELETE",
+                            "GET",
+                            "HEAD",
+                            "OPTIONS",
+                            "PATCH",
+                            "POST",
+                            "PUT"
+                        ],
+                        "TargetOriginId": "myS3Origin",
+                        "ForwardedValues": {
+                            "QueryString": "false",
+                            "Cookies": {
+                                "Forward": "none"
+                            }
+                        },
+                        "TrustedSigners": [
+                            "1234567890EX",
+                            "1234567891EX"
+                        ],
+                        "ViewerProtocolPolicy": "allow-all"
+                    },
+                    "PriceClass": "PriceClass_200",
+                    "Restrictions": {
+                        "GeoRestriction": {
+                            "RestrictionType": "whitelist",
+                            "Locations": [
+                                "AQ",
+                                "CV"
+                            ]
+                        }
+                    },
+                    "ViewerCertificate": {
+                        "CloudFrontDefaultCertificate": "true"
+                    }
+                }
+            }
+        },
+        "CEN_AWS_35_36_CloudTrail_Encrypted": {
+            "Type": "AWS::CloudTrail::Trail",
+            "Properties": {
+                "S3BucketName": "testbucketname123",
+                "SnsTopicName": "testsnstopicname123",
+                "IsLogging": true
+            }
+        },
+        "CEN_AWS_40_IAM_Policy_Group_Role": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "CFNUsers",
+                "Users": {
+                    "Ref": "IAMUserARN"
+                },
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "cloudformation:Describe*",
+                                "cloudformation:List*",
+                                "cloudformation:Get*"
+                            ],
+                            "Resource": "*"
+                        }
+                    ]
+                }
+            }
+        },
+        "CEN_AWS_42_EFS_Encrypted": {
+            "Type": "AWS::EFS::FileSystem",
+            "Properties": {
+                "BackupPolicy": {
+                    "Status": "ENABLED"
+                },
+                "PerformanceMode": "maxIO",
+                "Encrypted": false,
+                "LifecyclePolicies": [
+                    {
+                        "TransitionToIA": "AFTER_30_DAYS"
+                    }
+                ],
+                "FileSystemTags": [
+                    {
+                        "Key": "Name",
+                        "Value": "TestFileSystem"
+                    }
+                ],
+                "FileSystemPolicy": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "elasticfilesystem:ClientMount"
+                            ],
+                            "Principal": "arn:aws:iam::111122223333:root"
+                        }
+                    ]
+                }
+            }
+        },
+        "CEN_AWS_43_Kinesis_Encrypted": {
+            "Type": "AWS::Kinesis::Stream",
+            "Properties": {
+                "Name": "MyKinesisStream",
+                "RetentionPeriodHours": 168,
+                "ShardCount": 3
+            }
+        },
+        "CEN_AWS_44_Neptune_Cluster_Encrypted": {
+            "Type": "AWS::Neptune::DBCluster",
+            "Properties": {
+                "BackupRetentionPeriod": {
+                    "Ref": "BackupRetentionPeriod"
+                },
+                "DBClusterIdentifier": {
+                    "Ref": "DBClusterIdentifier"
+                },
+                "DBClusterParameterGroupName": {
+                    "Ref": "NeptuneDBClusterParameterGroup"
+                },
+                "DBSubnetGroupName": {
+                    "Ref": "NeptuneDBSubnetGroup"
+                },
+                "IamAuthEnabled": {
+                    "Ref": "IAMAuthEnabled"
+                },
+                "Port": {
+                    "Ref": "Port"
+                },
+                "PreferredBackupWindow": {
+                    "Ref": "NeptuneDBClusterPreferredBackupWindow"
+                },
+                "PreferredMaintenanceWindow": {
+                    "Ref": "NeptuneDBClusterPreferredMaintenanceWindow"
+                },
+                "VpcSecurityGroupIds": [
+                    {
+                        "Ref": "NeptuneDBSG"
+                    }
+                ]
+            }
+        },
+        "CEN_AWS_47_DAX_Encrypted": {
+            "Type": "AWS::DAX::Cluster",
+            "Properties": {
+                "ClusterName": "MyDAXCluster",
+                "NodeType": "dax.r3.large",
+                "ReplicationFactor": 1,
+                "IAMRoleARN": "arn:aws:iam::111122223333:role/DaxAccess",
+                "Description": "DAX cluster created with CloudFormation",
+                "SubnetGroupName": {
+                    "Ref": "subnetGroupClu"
+                }
+            }
+        },
+        "CEN_AWS_58_EKS_Encrypted": {
+            "Type": "AWS::EKS::Cluster",
+            "Properties": {
+                "Name": "prod",
+                "Version": "1.14",
+                "RoleArn": "arn:aws:iam::012345678910:role/eks-service-role-AWSServiceRoleForAmazonEKS-EXAMPLEBQ4PI",
+                "ResourcesVpcConfig": {
+                    "SecurityGroupIds": [
+                        "sg-6979fe18"
+                    ],
+                    "SubnetIds": [
+                        "subnet-6782e71e",
+                        "subnet-e7e761ac"
+                    ]
+                }
+            }
+        },
+        "CEN_AWS_59_API_GW_Open_Access": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+                "RestApiId": {
+                    "Ref": "MyApi"
+                },
+                "ResourceId": {
+                    "Fn::GetAtt": [
+                        "MyApi",
+                        "RootResourceId"
+                    ]
+                },
+                "HttpMethod": "GET",
+                "AuthorizationType": "NONE",
+                "Integration": {
+                    "Type": "MOCK"
+                }
+            }
+        },
+        "CEN_AWS_61_IAM_Role_Principals": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": [
+                                    "arn:aws:iam::123456789012:user/rachana",
+                                    "arn:aws:iam::123456789012:root"
+                                ],
+                                "Service": [
+                                    "ecs.amazonaws.com"
+                                ]
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole"
+                ],
+                "Path": "/",
+                "RoleName": "AutomationServiceRole",
+                "Policies": [
+                    {
+                        "PolicyName": "passrole",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "iam:PassRole"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::GetAtt": [
+                                                "CEN_AWS_61_IAM_Role_Principals",
+                                                "Arn"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "CEN_AWS_64_Redshift_Encrypted_Rest": {
+            "Type": "AWS::Redshift::Cluster",
+            "Properties": {
+                "DBName": "mydb",
+                "MasterUsername": "master",
+                "MasterUserPassword": {
+                    "Ref": "MasterUserPassword"
+                },
+                "NodeType": "ds2.xlarge",
+                "ClusterType": "single-node"
+            }
+        },
+        "CES_AWS_65_ECS_Container_Insights": {
+            "Type": "AWS::ECS::Cluster",
+            "Properties": {
+                "ClusterName": "MyFargateCluster",
+                "CapacityProviders": [
+                    "FARGATE",
+                    "FARGATE_SPOT"
+                ],
+                "DefaultCapacityProviderStrategy": [
+                    {
+                        "CapacityProvider": "FARGATE",
+                        "Weight": 1
+                    },
+                    {
+                        "CapacityProvider": "FARGATE_SPOT",
+                        "Weight": 1
+                    }
+                ]
+            }
+        },
+        "CES_AWS_66_LogGroup_RetentionDays": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+                "LogGroupName": "TestLogGroup"
+            }
+        },
+        "CEN_AWS_73_76_API_GW_XRay_Tracing_Access_Logging": {
+            "Type": "AWS::ApiGateway::Stage",
+            "Properties": {
+                "StageName": "Prod",
+                "Description": "Prod Stage",
+                "RestApiId": {
+                    "Ref": "MyRestApi"
+                },
+                "DeploymentId": {
+                    "Ref": "TestDeployment"
+                },
+                "DocumentationVersion": {
+                    "Ref": "MyDocumentationVersion"
+                },
+                "ClientCertificateId": {
+                    "Ref": "ClientCertificate"
+                },
+                "Variables": {
+                    "Stack": "Prod"
+                },
+                "MethodSettings": [
+                    {
+                        "ResourcePath": "/",
+                        "HttpMethod": "GET",
+                        "MetricsEnabled": "true",
+                        "DataTraceEnabled": "false"
+                    },
+                    {
+                        "ResourcePath": "/stack",
+                        "HttpMethod": "POST",
+                        "MetricsEnabled": "true",
+                        "DataTraceEnabled": "false",
+                        "ThrottlingBurstLimit": "999"
+                    },
+                    {
+                        "ResourcePath": "/stack",
+                        "HttpMethod": "GET",
+                        "MetricsEnabled": "true",
+                        "DataTraceEnabled": "false",
+                        "ThrottlingBurstLimit": "555"
+                    }
+                ]
+            }
+        },
+        "CEN_AWS_74_85_DocDB_Encrypted_Rest_Access_Logging": {
+            "Type": "AWS::DocDB::DBCluster",
+            "Properties": {
+                "BackupRetentionPeriod": 8,
+                "DBClusterIdentifier": "sample-cluster",
+                "DBClusterParameterGroupName": "default.docdb3.6",
+                "DBSubnetGroupName": "default",
+                "MasterUsername": "your-master-username",
+                "MasterUserPassword": "your-master-user-password",
+                "Port": "27017",
+                "PreferredBackupWindow": "07:34-08:04",
+                "PreferredMaintenanceWindow": "sat:04:51-sat:05:21",
+                "StorageEncrypted": false
+            }
+        },
+        "CEN_AWS_82_Disabling_Client_Encryption": {
+            "Type": "AWS::Athena::WorkGroup",
+            "Properties": {
+                "Name": "MyCustomWorkGroup",
+                "Description": "My WorkGroup",
+                "State": "ENABLED",
+                "WorkGroupConfiguration": {
+                    "BytesScannedCutoffPerQuery": 200000000,
+                    "EnforceWorkGroupConfiguration": false,
+                    "PublishCloudWatchMetricsEnabled": false,
+                    "RequesterPaysEnabled": true,
+                    "ResultConfiguration": {
+                        "OutputLocation": "s3://path/to/my/bucket/"
+                    }
+                }
+            }
+        }
     }
-   },
-    "NewVolume1" : {
-   "Type" : "AWS::EC2::Volume",
-   "Properties" : {
-      "Size" : "100",
-      "AvailabilityZone" : { "Fn::GetAtt" : [ "MyEC2Instance", "AvailabilityZone" ] },
-      "Encrypted":false,
-    }
-   }
-  }
 }
