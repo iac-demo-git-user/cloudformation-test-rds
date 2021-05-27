@@ -5,7 +5,10 @@
         "RestApi": {
             "Type": "AWS::ApiGateway::RestApi",
             "Properties": {
-                "Name": "myApi"
+                "Name": "myApi",
+              "Parameters": {
+                    "endpointConfigurationTypes": "PRIVATE"
+                }
             }
         },
         
