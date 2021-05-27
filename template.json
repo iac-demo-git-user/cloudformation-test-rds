@@ -7,7 +7,7 @@
             "Properties": {
                 "Name": "myApi",
                 "Parameters": {
-                    "endpointConfigurationTypes": "REGIONAL"
+                    "endpointConfigurationTypes": "PRIVATE"
                 }
             }
         },
