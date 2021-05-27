@@ -1,37 +1,43 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
   "Description" : "A sample template",
-    "Resources": {
-        "RestApi": {
-            "Type": "AWS::ApiGateway::RestApi",
-            "Properties": {
-                "Name": "myApi",
-                "EndpointConfiguration": {
-          "Types": [
-            "REGIONAL"
-          ]
-        }
-            }
-        },
-        
-        "MockMethod": {
-        "Type": "AWS::ApiGateway::Method",
-        "Properties": {
-            "RestApiId": {
-                "Ref": "RestApi"
+  "Resources" : {
+    "MyEC2Instance" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "ImageId" : "ami-0ff8a91507f77f867",
+        "InstanceType" : "t2.micro",
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sdm",
+            "Ebs" : {
+              "VolumeType" : "io1",
+              "Iops" : 200,
+              "DeleteOnTermination" : false,
+              "VolumeSize" : 20,
+              "Encrypted":true,
             },
-            "ResourceId": {
-                "Fn::GetAtt": [
-                    "RestApi",
-                    "RootResourceId"
-                ]
-            },
-            "HttpMethod": "GET",
-            "AuthorizationType": "NONE",
-            "Integration": {
-                "Type": "MOCK"
-            }
-        }
+            
+          },
+            
+        ]
+      }
+    },
+    "NewVolume" : {
+   "Type" : "AWS::EC2::Volume",
+   "Properties" : {
+      "Size" : "100",
+      "AvailabilityZone" : { "Fn::GetAtt" : [ "MyEC2Instance", "AvailabilityZone" ] },
+      "Encrypted":true,
     }
+   },
+    "NewVolume1" : {
+   "Type" : "AWS::EC2::Volume",
+   "Properties" : {
+      "Size" : "100",
+      "AvailabilityZone" : { "Fn::GetAtt" : [ "MyEC2Instance", "AvailabilityZone" ] },
+      "Encrypted":true,
+    }
+   }
   }
 }
