@@ -1,82 +1,111 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
   "Description" : "A sample template",
-    "Resources": {
-        "RestApi": {
-            "Type": "AWS::ApiGateway::RestApi",
+  "Resources" : {
+          "VPC": {
+            "Type": "AWS::EC2::VPC",
             "Properties": {
-                "Name": "myApi",
-                "Parameters": {
-                    "endpointConfigurationTypes": "REGIONAL"
-                }
-            }
-        },
-        
-        "MockMethod": {
-        "Type": "AWS::ApiGateway::Method",
-        "Properties": {
-            "RestApiId": {
-                "Ref": "RestApi"
-            },
-            "ResourceId": {
-                "Fn::GetAtt": [
-                    "RestApi",
-                    "RootResourceId"
-                ]
-            },
-            "HttpMethod": "GET",
-            "AuthorizationType": "NONE",
-            "Integration": {
-                "Type": "MOCK"
-            }
-        }
-    },
-    
-    "TestClientCertificate": {
-        "Type": "AWS::ApiGateway::ClientCertificate",
-        "Properties": {
-            "Description": "A test client certificate"
-        }
-    },
-    
-    "dev": {
-            "Type": "AWS::ApiGateway::Stage",
-            "Properties": {
-                "StageName": "Prod",
-                "Description": "Prod Stage",
-                "RestApiId": {
-                    "Ref": "RestApi"
-                },
-                "DeploymentId": {
-                    "Ref": "TestDeployment"
-                },
-                "ClientCertificateId": {
-                    "Ref": "TestClientCertificate"
-                },
-                "Variables": {
-                    "Stack": "Prod"
-                },
-                "MethodSettings": [
+                "CidrBlock": "10.16.0.0/16",
+                "Tags": [
                     {
-                        "ResourcePath": "/",
-
-                        "HttpMethod": "GET",
-                        "MetricsEnabled": "true",
-                        "DataTraceEnabled": "false"
+                        "Key": "Application",
+                        "Value": {
+                            "Ref": "AWS::StackId"
+                        }
                     }
                 ]
             }
         },
-        "TestDeployment": {
-        "Type": "AWS::ApiGateway::Deployment",
-        "DependsOn":"MockMethod",
-        "Properties": {
-            "RestApiId": {
-                "Ref": "RestApi"
+    "MyEC2Instance" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "ImageId" : "ami-0ff8a91507f77f867",
+        "InstanceType" : "t2.micro",
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sdm",
+            "Ebs" : {
+              "VolumeType" : "io1",
+              "Iops" : 200,
+              "DeleteOnTermination" : false,
+              "VolumeSize" : 20,
+              "Encrypted":true,
             },
-            "Description": "My deployment",
-            "StageName": "dev"
-        }
+            
+          },
+            
+        ]
+      }
+    },
+    "NewVolume" : {
+   "Type" : "AWS::EC2::Volume",
+   "Properties" : {
+      "Size" : "100",
+      "AvailabilityZone" : { "Fn::GetAtt" : [ "MyEC2Instance", "AvailabilityZone" ] },
+      "Encrypted":true,
     }
+   },
+    "NewVolume1" : {
+   "Type" : "AWS::EC2::Volume",
+   "Properties" : {
+      "Size" : "100",
+      "AvailabilityZone" : { "Fn::GetAtt" : [ "MyEC2Instance", "AvailabilityZone" ] },
+      "Encrypted":true,
+    }
+   },
+   "SourceSG": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+         "VpcId" : {"Ref" : "VPC"},
+         "GroupDescription": "Sample source security group"
+      }
+   },
+   "TargetSG": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+         "VpcId" : {"Ref" : "VPC"},
+         "GroupDescription": "Sample target security group"
+      }
+   },
+   "OutboundRule": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties":{
+         "IpProtocol": "tcp",
+         "FromPort": 0,
+         "ToPort": 65535,
+         "DestinationSecurityGroupId": {
+            "Fn::GetAtt": [
+               "TargetSG",
+               "GroupId"
+            ]
+         },
+         "GroupId": {
+            "Fn::GetAtt": [
+               "SourceSG",
+               "GroupId"
+            ]
+         }
+      }
+   },
+   "InboundRule": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+         "IpProtocol": "tcp",
+         "FromPort": 0,
+         "ToPort": 65535,
+         "SourceSecurityGroupId": {
+           "Fn::GetAtt": [
+             "SourceSG",
+             "GroupId"
+            ]
+         },
+         "GroupId": {
+            "Fn::GetAtt": [
+              "TargetSG",
+              "GroupId"
+            ]
+         }
+      }
+   }
   }
 }
