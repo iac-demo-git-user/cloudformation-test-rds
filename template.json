@@ -6,11 +6,9 @@
             "Type": "AWS::ApiGateway::RestApi",
             "Properties": {
                 "Name": "myApi",
-                "EndpointConfiguration": {
-          "Types": [
-            "REGIONAL"
-          ]
-        }
+                "Parameters": {
+                    "endpointConfigurationTypes": "REGIONAL"
+                }
             }
         },
         
@@ -31,6 +29,53 @@
             "Integration": {
                 "Type": "MOCK"
             }
+        }
+    },
+    
+    "TestClientCertificate": {
+        "Type": "AWS::ApiGateway::ClientCertificate",
+        "Properties": {
+            "Description": "A test client certificate"
+        }
+    },
+    
+    "dev": {
+            "Type": "AWS::ApiGateway::Stage",
+            "Properties": {
+                "StageName": "Prod",
+                "Description": "Prod Stage",
+                "RestApiId": {
+                    "Ref": "RestApi"
+                },
+                "DeploymentId": {
+                    "Ref": "TestDeployment"
+                },
+                "ClientCertificateId": {
+                    "Ref": "TestClientCertificate"
+                },
+                "Variables": {
+                    "Stack": "Prod"
+                },
+                "MethodSettings": [
+                    {
+                        "ResourcePath": "/",
+
+                        "HttpMethod": "GET",
+                        "MetricsEnabled": "true",
+                        "DataTraceEnabled": "false"
+                    }
+                ]
+            }
+        },
+        "TestDeployment": {
+        "Type": "AWS::ApiGateway::Deployment",
+        "DependsOn":"MockMethod",
+        "Properties": {
+            "RestApiId": {
+                "Ref": "RestApi"
+            },
+            "Description": "My deployment",
+            "StageName": "dev"
         }
     }
   }
