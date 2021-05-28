@@ -2,25 +2,12 @@
   "AWSTemplateFormatVersion" : "2010-09-09",
   "Description" : "A sample template",
   "Resources" : {
-          "VPC": {
-            "Type": "AWS::EC2::VPC",
-            "Properties": {
-                "CidrBlock": "10.16.0.0/16",
-                "Tags": [
-                    {
-                        "Key": "Application",
-                        "Value": {
-                            "Ref": "AWS::StackId"
-                        }
-                    }
-                ]
-            }
-        },
     "MyEC2Instance" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "ImageId" : "ami-0ff8a91507f77f867",
         "InstanceType" : "t2.micro",
+        "DisableApiTermination" : "true",
         "BlockDeviceMappings" : [
           {
             "DeviceName" : "/dev/sdm",
@@ -30,82 +17,11 @@
               "DeleteOnTermination" : false,
               "VolumeSize" : 20,
               "Encrypted":true,
-            },
-            
-          },
-            
+            }
+          }
+          
         ]
       }
-    },
-    "NewVolume" : {
-   "Type" : "AWS::EC2::Volume",
-   "Properties" : {
-      "Size" : "100",
-      "AvailabilityZone" : { "Fn::GetAtt" : [ "MyEC2Instance", "AvailabilityZone" ] },
-      "Encrypted":true,
     }
-   },
-    "NewVolume1" : {
-   "Type" : "AWS::EC2::Volume",
-   "Properties" : {
-      "Size" : "100",
-      "AvailabilityZone" : { "Fn::GetAtt" : [ "MyEC2Instance", "AvailabilityZone" ] },
-      "Encrypted":true,
-    }
-   },
-   "SourceSG": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-         "VpcId" : {"Ref" : "VPC"},
-         "GroupDescription": "Sample source security group"
-      }
-   },
-   "TargetSG": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-         "VpcId" : {"Ref" : "VPC"},
-         "GroupDescription": "Sample target security group"
-      }
-   },
-   "OutboundRule": {
-      "Type": "AWS::EC2::SecurityGroupEgress",
-      "Properties":{
-         "IpProtocol": "tcp",
-         "FromPort": 0,
-         "ToPort": 65535,
-         "DestinationSecurityGroupId": {
-            "Fn::GetAtt": [
-               "TargetSG",
-               "GroupId"
-            ]
-         },
-         "GroupId": {
-            "Fn::GetAtt": [
-               "SourceSG",
-               "GroupId"
-            ]
-         }
-      }
-   },
-   "InboundRule": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties":{
-         "IpProtocol": "tcp",
-         "FromPort": 0,
-         "ToPort": 65535,
-         "SourceSecurityGroupId": {
-           "Fn::GetAtt": [
-             "SourceSG",
-             "GroupId"
-            ]
-         },
-         "GroupId": {
-            "Fn::GetAtt": [
-              "TargetSG",
-              "GroupId"
-            ]
-         }
-      }
-   }
   }
 }
