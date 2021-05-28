@@ -1,286 +1,209 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "For Checkov Fail Test 01 From CEN_AWS_1 to CEN_AWS_21, CEN_AWS_33 also CEN_AWS_53 to CEN_AWS_57",
-    "Parameters": {
-        "Key": {
-            "Type": "String"
-        },
-        "Value": {
-            "Type": "String"
-        },
-        "LatestAmiId": {
-            "Description": "Region specific image from the Parameter Store",
-            "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
-            "Default": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
-        },
-        "InstanceType": {
-            "Description": "Amazon EC2 instance type for the instances",
-            "Type": "String",
-            "AllowedValues": [
-                "t3.micro",
-                "t3.small",
-                "t3.medium"
-            ],
-            "Default": "t3.micro"
-        },
-        "DBInstanceID": {
-            "Default": "mydbinstance",
-            "Description": "My database instance",
-            "Type": "String",
-            "MinLength": "1",
-            "MaxLength": "63",
-            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
-            "ConstraintDescription": "Must begin with a letter and must not end with a hyphen or contain two consecutive hyphens."
-        },
-        "myVPC": {
-            "Type": "String"
-        },
-        "DBName": {
-            "Default": "mydb",
-            "Description": "My database",
-            "Type": "String",
-            "MinLength": "1",
-            "MaxLength": "64",
-            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
-            "ConstraintDescription": "Must begin with a letter and contain only alphanumeric characters."
-        },
-        "DBInstanceClass": {
-            "Default": "db.m5.large",
-            "Description": "DB instance class",
-            "Type": "String",
-            "ConstraintDescription": "Must select a valid DB instance type."
-        },
-        "DBAllocatedStorage": {
-            "Default": "50",
-            "Description": "The size of the database (GiB)",
-            "Type": "Number",
-            "MinValue": "5",
-            "MaxValue": "1024",
-            "ConstraintDescription": "must be between 20 and 65536 GiB."
-        },
-        "DBUsername": {
-            "NoEcho": "true",
-            "Description": "Username for MySQL database access",
-            "Type": "String",
-            "MinLength": "1",
-            "MaxLength": "16",
-            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
-            "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
-        },
-        "DBPassword": {
-            "NoEcho": "true",
-            "Description": "Password MySQL database access",
-            "Type": "String",
-            "MinLength": "8",
-            "MaxLength": "41",
-            "AllowedPattern": "[a-zA-Z0-9]*",
-            "ConstraintDescription": "must contain only alphanumeric characters."
-        }
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "AWS CloudFormation Sample Template RedshiftClusterInVpc: Create an Amazon Redshift cluster in an Amazon Virtual Private Cloud (VPC). **WARNING** This template creates Amazon Redshift Cluster. You will be billed for the AWS resources used if you create a stack from this template.",
+ 
+  "Parameters": {
+    "DatabaseName": {
+      "Description": "The name of the first database to be created when the redshift cluster is created",
+      "Type": "String",
+      "Default": "defaultdb",
+      "AllowedPattern": "([a-z]|[0-9])+",
+      "ConstraintDescription" : "must contain a-z or 0-9 only."
     },
-    "Resources": {
-        "CEN_AWS_2_ALB_HTTPS": {
-            "Type": "AWS::ElasticLoadBalancingV2::Listener",
-            "Properties": {
-                "DefaultActions": [
-                    {
-                        "Type": "redirect",
-                        "RedirectConfig": {
-                            "Protocol": "HTTP",
-                            "Port": 80,
-                            "Host": "#{host}",
-                            "Path": "/#{path}",
-                            "Query": "#{query}",
-                            "StatusCode": "HTTP_301"
-                        }
-                    }
-                ],
-                "LoadBalancerArn": {
-                    "Ref": "myLoadBalancer"
-                },
-                "Port": 80,
-                "Protocol": "HTTP"
-            }
-        },
-        "CEN_AWS_3_EBS_Encrypted": {
-            "Type": "AWS::EC2::Volume",
-            "Properties": {
-                "Size": 100,
-                "DeletionPolicy": "Snapshot",
-                "Tags": [
-                    {
-                        "Key": "MyTag",
-                        "Value": "TagValue"
-                    }
-                ]
-            }
-        },
-        "CEN_AWS_5_Elasticsearch_Encrypted_AT_Rest": {
-            "Type": "AWS::Elasticsearch::Domain",
-            "Properties": {
-                "DomainName": "test",
-                "ElasticsearchClusterConfig": {
-                    "DedicatedMasterEnabled": "true",
-                    "InstanceCount": "2",
-                    "ZoneAwarenessEnabled": "true",
-                    "InstanceType": "m3.medium.elasticsearch",
-                    "DedicatedMasterType": "m3.medium.elasticsearch",
-                    "DedicatedMasterCount": "3"
-                },
-                "EBSOptions": {
-                    "EBSEnabled": true,
-                    "Iops": 0,
-                    "VolumeSize": 20,
-                    "VolumeType": "gp2"
-                },
-                "SnapshotOptions": {
-                    "AutomatedSnapshotStartHour": "0"
-                },
-                "AccessPolicies": {
-                    "Version": "2012-10-17",
-                    "Statement": [
-                        {
-                            "Effect": "Allow",
-                            "Principal": {
-                                "AWS": "arn:aws:iam::123456789012:user/es-user"
-                            },
-                            "Action": "es:*",
-                            "Resource": "arn:aws:es:us-east-1:123456789012:domain/test/*"
-                        }
-                    ]
-                },
-                "AdvancedOptions": {
-                    "rest.action.multi.allow_explicit_index": "true"
-                }
-            }
-        },
-        "CEN_AWS_6_Elasticsearch_Encrypted_Node": {
-            "Type": "AWS::Elasticsearch::Domain",
-            "Properties": {
-                "DomainName": "test",
-                "ElasticsearchClusterConfig": {
-                    "DedicatedMasterEnabled": "true",
-                    "InstanceCount": "2",
-                    "ZoneAwarenessEnabled": "true",
-                    "InstanceType": "m3.medium.elasticsearch",
-                    "DedicatedMasterType": "m3.medium.elasticsearch",
-                    "DedicatedMasterCount": "3"
-                },
-                "EncryptionAtRestOptions": {
-                    "Enabled": false,
-                    "KmsKeyId": "1a2a3a4-1a2a-3a4a-5a6a-1a2a3a4a5a6a"
-                },
-                "EBSOptions": {
-                    "EBSEnabled": true,
-                    "Iops": 0,
-                    "VolumeSize": 20,
-                    "VolumeType": "gp2"
-                },
-                "SnapshotOptions": {
-                    "AutomatedSnapshotStartHour": "0"
-                },
-                "AccessPolicies": {
-                    "Version": "2012-10-17",
-                    "Statement": [
-                        {
-                            "Effect": "Allow",
-                            "Principal": {
-                                "AWS": "arn:aws:iam::123456789012:user/es-user"
-                            },
-                            "Action": "es:*",
-                            "Resource": "arn:aws:es:us-east-1:123456789012:domain/test/*"
-                        }
-                    ]
-                },
-                "AdvancedOptions": {
-                    "rest.action.multi.allow_explicit_index": "true"
-                }
-            }
-        },
-        "CEN_AWS_7_33_CMK_Rotation": {
-            "Type": "AWS::KMS::Key",
-            "Properties": {
-                "KeyPolicy": {
-                    "Version": "2012-10-17",
-                    "Id": "key-default-1",
-                    "Statement": [
-                        {
-                            "Sid": "Enable IAM User Permissions",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": "kms:*",
-                            "Resource": "*"
-                        }
-                    ]
-                }
-            }
-        },
-        "CEN_AWS_8_Launch_Configuration_EBS_Encrypted": {
-            "Type": "AWS::AutoScaling::LaunchConfiguration",
-            "Properties": {
-                "ImageId": {
-                    "Ref": "LatestAmiId"
-                },
-                "SecurityGroups": [
-                    {
-                        "Ref": "myEC2SecurityGroup"
-                    }
-                ],
-                "InstanceType": {
-                    "Ref": "InstanceType"
-                },
-                "BlockDeviceMappings": [
-                    {
-                        "DeviceName": "/dev/sda1",
-                        "Ebs": {
-                            "VolumeSize": 30,
-                            "VolumeType": "gp2"
-                        }
-                    },
-                    {
-                        "DeviceName": "/dev/sdm",
-                        "Ebs": {
-                            "VolumeSize": 100,
-                            "DeleteOnTermination": "false"
-                        }
-                    }
-                ]
-            }
-        },
-        "CEN_AWS_16_17_RDS_Encrypted_Rest_NotPublic": {
-            "Type": "AWS::RDS::DBInstance",
-            "Properties": {
-                "DBInstanceIdentifier": {
-                    "Ref": "DBInstanceID"
-                },
-                "DBName": {
-                    "Ref": "DBName"
-                },
-                "DBInstanceClass": {
-                    "Ref": "DBInstanceClass"
-                },
-                "AllocatedStorage": {
-                    "Ref": "DBAllocatedStorage"
-                },
-                "Engine": "MySQL",
-                "EngineVersion": "8.0.16",
-                "MasterUsername": {
-                    "Ref": "DBUsername"
-                },
-                "MasterUserPassword": {
-                    "Ref": "DBPassword"
-                },
-                "PubliclyAccessible": true,
-                "MonitoringInterval": "60",
-                "MonitoringRoleArn": "arn:aws:iam::123456789012:role/rds-monitoring-role"
-            }
-        },
-        "CEN_AWS_18_19_20_21_53_54_55_56_57_S3": {
-            "Type": "AWS::S3::Bucket",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-                "AccessControl": "PublicReadWrite",
-                "BucketName": "DOC-EXAMPLE-BUCKET"
-            }
-        }
+
+    "ClusterType": {
+      "Description": "The type of the cluster",
+      "Type": "String",
+      "Default": "single-node",
+      "AllowedValues": [ "single-node", "multi-node" ],
+      "ConstraintDescription" : "must be single-node or multi-node."
+    },
+
+    "NumberOfNodes": {
+      "Description": "The nuber of compute nodes in the redshift cluster.  When cluster type is specified as: 1) single-node, the NumberOfNodes parameter should be specified as 1, 2) multi-node, the NumberOfNodes parameter should be greater than 1",
+      "Type": "Number",
+      "Default": "1"
+    },
+
+    "NodeType": {
+      "Description": "The node type to be provisioned for the redshift cluster",
+      "Type": "String",
+      "Default": "dw1.xlarge",
+      "AllowedValues" : [ "dw1.xlarge", "dw1.8xlarge", "dw2.large", "dw2.8xlarge" ]
+,
+      "ConstraintDescription" : "must be a valid RedShift node type."
+    },
+
+    "MasterUsername": {
+      "Description": "The user name associated with the master user account for the redshift cluster that is being created",
+      "Type": "String",
+      "AllowedPattern": "([a-z])([a-z]|[0-9])*",
+      "NoEcho": "true",
+      "ConstraintDescription" : "must start with a-z and contain only a-z or 0-9."
+    },
+
+    "MasterUserPassword": {
+      "Description": "The password associated with the master user account for the redshift cluster that is being created. ",
+      "Type": "String",
+      "NoEcho": "true",
+      "MinLength": "1",
+      "MaxLength": "41",
+      "AllowedPattern" : "[a-zA-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
+    },
+
+    "DatabasePort": {
+      "Description": "The port that Redshift will listen on and that will be allowed through the Security Group. ",
+      "Type": "String",
+      "Default": "5439"
     }
+  },
+
+  "Conditions": {
+    "IsMultiNodeCluster": { "Fn::Equals": [ { "Ref": "ClusterType" }, "multi-node" ] }
+  },
+
+  "Resources": {
+    "RedshiftCluster": {
+      "Type": "AWS::Redshift::Cluster",
+      "Properties": {
+        "ClusterType": { "Ref": "ClusterType" },
+        "NumberOfNodes": { "Fn::If": [ "IsMultiNodeCluster", { "Ref": "NumberOfNodes" }, { "Ref": "AWS::NoValue" } ] },
+        "NodeType": { "Ref": "NodeType" },
+        "DBName": { "Ref": "DatabaseName" },
+        "MasterUsername": { "Ref": "MasterUsername" },
+        "MasterUserPassword": { "Ref": "MasterUserPassword" },
+        "ClusterParameterGroupName": { "Ref": "RedshiftClusterParameterGroup" },
+        "VpcSecurityGroupIds": [ { "Ref": "SecurityGroup" } ],
+        "ClusterSubnetGroupName": { "Ref": "RedshiftClusterSubnetGroup" },
+        "PubliclyAccessible": "false",
+        "Port" : { "Ref" : "DatabasePort" },
+        "PubliclyAccessible" : "true"
+      }
+    },
+    "RedshiftClusterParameterGroup": {
+      "Type": "AWS::Redshift::ClusterParameterGroup",
+      "Properties": {
+        "Description": "Cluster paraeter group",
+        "ParameterGroupFamily": "redshift-1.0",
+        "Parameters": [ {
+          "ParameterName": "enable_user_activity_logging",
+          "ParameterValue": "true"
+        } ]
+      }
+    },
+    "RedshiftClusterSubnetGroup": {
+      "Type": "AWS::Redshift::ClusterSubnetGroup",
+      "Properties": {
+        "Description": "Cluster subnet group",
+        "SubnetIds": [ { "Ref": "Subnet" } ]
+      }
+    },
+    "VPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16"
+      }
+    },
+    "Subnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/24",
+        "VpcId": { "Ref": "VPC" },
+        "AvailabilityZone" : {
+        	"Fn::Select": [
+           		"0",
+            	{
+              	"Fn::GetAZs": ""
+            	}
+          	]
+        }
+      }
+    },
+    "InternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "DependsOn": "VPC"
+    },
+    "AttachGateway": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "DependsOn": [
+        "VPC",
+        "InternetGateway"
+      ],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "InternetGatewayId": {
+          "Ref": "InternetGateway"
+        }
+      }
+    },
+    "PublicRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": [
+        "AttachGateway"
+      ],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Public Route Table"
+          }
+        ]
+      }
+    },
+    "PublicRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": [
+        "PublicRouteTable"
+      ],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "InternetGateway"
+        }
+      }
+    },
+    "DPublicSubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": [
+        "PublicRouteTable",
+        "Subnet",
+        "AttachGateway"
+      ],
+      "Properties": {
+        "SubnetId": {
+          "Ref": "Subnet"
+        },
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        }
+      }
+    },
+    "SecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group",
+        "SecurityGroupIngress": [ {
+          "CidrIp": "10.0.0.0/0", "FromPort": { "Ref" : "DatabasePort" }, "ToPort": { "Ref" : "DatabasePort" }, "IpProtocol": "tcp"
+        } ],
+        "VpcId": { "Ref": "VPC" }
+      }
+    }
+  },
+
+  "Outputs": {
+    "ClusterEndpoint": {
+      "Description" : "Endpoint for the newly created RedShift cluster",
+      "Value":  { "Fn::GetAtt": [ "RedshiftCluster", "Endpoint.Address" ] }
+    }
+  }
 }
