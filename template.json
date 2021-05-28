@@ -7,7 +7,6 @@
       "Properties" : {
         "ImageId" : "ami-0ff8a91507f77f867",
         "InstanceType" : "t2.micro",
-        "DisableApiTermination" : "true",
         "BlockDeviceMappings" : [
           {
             "DeviceName" : "/dev/sdm",
