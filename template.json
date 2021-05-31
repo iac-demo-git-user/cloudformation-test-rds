@@ -1,11 +1,10 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
 
-  "Description" : "This CloudFormation sample template DMSAuroraToS3FullLoadAndOngoingReplication creates an Aurora RDS instance and DMS instance in a VPC, and a S3 bucket. The Aurora RDS instance is configured as the DMS Source Endpoint and the S3 bucket is configured as the DMS Target Endpoint. A DMS task is created and configured to migrate existing data and replicate ongoing changes from the source endpoint to the target endpoint. You will be billed for the AWS resources used if you create a stack from this template.",
-
+  "Description" : "",
   "Parameters" : {
     "ClientIP" : {
-      "Description" : "The IP address range that can be used to connect to the RDS instances from your local machine. It must be a valid IP CIDR range of the form x.x.x.x/x. Pls get your address using checkip.amazonaws.com or whatsmyip.org",
+      "Description" : "",
       "Type": "String",
       "MinLength": "9",
       "MaxLength": "18",
