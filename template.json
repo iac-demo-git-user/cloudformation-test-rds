@@ -58,7 +58,7 @@
       }
     },
     
-     "NewSecurityGroup" : {
+      "NewSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Condition" : "CreateNewSecurityGroup",
       "Properties" : {
@@ -70,8 +70,7 @@
           "CidrIp" : "0.0.0.0/0"
         } ]
       }
-    }
-  },
+    },
 
     "MyRDSParamGroup" : {
       "Type": "AWS::RDS::DBParameterGroup",
