@@ -354,7 +354,7 @@
             "Properties": {
                 "S3BucketName": "testbucketname123",
                 "SnsTopicName": "testsnstopicname123",
-                "IsLogging": true
+                "IsLogging": false
             }
         },
         "CEN_AWS_40_IAM_Policy_Group_Role": {
