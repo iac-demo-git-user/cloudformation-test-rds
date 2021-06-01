@@ -71,7 +71,7 @@
           },
           "INDEX_SLOW_LOGS": {
             "CloudWatchLogsLogGroupArn": "arn:aws:logs:us-east-1:123456789012:log-group:/aws/aes/domains/es-index-slow-logs",
-            "Enabled": "true"
+            "Enabled": "false"
           }
         },
         "AdvancedOptions": {
