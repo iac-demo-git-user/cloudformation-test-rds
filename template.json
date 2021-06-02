@@ -29,7 +29,7 @@
                              "Cookies" : { "Forward" : "none" }
                         },
                          "TrustedSigners" : [ "1234567890EX", "1234567891EX" ],
-                         "ViewerProtocolPolicy" : "allow-all"
+                         "ViewerProtocolPolicy" : "redirect-to-https"
                      },
                     "PriceClass" : "PriceClass_200",
                     "Restrictions" : {
