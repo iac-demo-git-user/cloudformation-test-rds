@@ -1,0 +1,46 @@
+ 1. {
+ 2.     "AWSTemplateFormatVersion" : "2010-09-09",
+ 3.     "Resources" : {
+ 4.         "myDistribution" : {
+ 5.             "Type" : "AWS::CloudFront::Distribution",
+ 6.             "Properties" : {
+ 7.                 "DistributionConfig" : {
+ 8.                     "Origins" : [ {
+ 9.                         "DomainName" : "mybucket.s3.amazonaws.com",
+10.                         "Id" : "myS3Origin",
+11.                         "S3OriginConfig" : {
+12.                             "OriginAccessIdentity" : "origin-access-identity/cloudfront/E127EXAMPLE51Z"
+13.                         }
+14.                     }],
+15.                     "Enabled" : "true",
+16.                     "Comment" : "Some comment",
+17.                     "DefaultRootObject" : "index.html",
+18.                     "Logging" : {
+19.                         "IncludeCookies" : "false",
+20.                         "Bucket" : "mylogs.s3.amazonaws.com",
+21.                         "Prefix" : "myprefix"
+22.                     },
+23.                     "Aliases" : [ "mysite.example.com", "yoursite.example.com" ],
+24.                     "DefaultCacheBehavior" : {
+25.                         "AllowedMethods" : [ "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT" ],  
+26.                         "TargetOriginId" : "myS3Origin",
+27.                         "ForwardedValues" : {
+28.                             "QueryString" : "false",
+29.                             "Cookies" : { "Forward" : "none" }
+30.                         },
+31.                         "TrustedSigners" : [ "1234567890EX", "1234567891EX" ],
+32.                         "ViewerProtocolPolicy" : "allow-all"
+33.                     },
+34.                    "PriceClass" : "PriceClass_200",
+35.                    "Restrictions" : {
+36.                        "GeoRestriction" : {
+37.                            "RestrictionType" : "whitelist",
+38.                            "Locations" : [ "AQ", "CV" ]
+39.                        }
+40.                    },
+41.                    "ViewerCertificate" : { "CloudFrontDefaultCertificate" : "true" }  
+42.                 }
+43.             }
+44.         }
+45.     }
+46. }
