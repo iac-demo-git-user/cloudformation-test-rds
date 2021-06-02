@@ -34,7 +34,7 @@
                     "PriceClass" : "PriceClass_200",
                     "Restrictions" : {
                         "GeoRestriction" : {
-                            "RestrictionType" : "none",
+                            "RestrictionType" : "whitelist",
                             "Locations" : [ "AQ", "CV" ]
                         }
                     },
