@@ -67,7 +67,7 @@
         "ApiKeySourceType": "HEADER",
         "EndpointConfiguration": {
           "Types": [
-            "REGIONAL"
+            "PRIVATE"
           ]
         },
         "FailOnWarnings": true
