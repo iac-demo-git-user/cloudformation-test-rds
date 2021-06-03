@@ -24,7 +24,7 @@
                     {
                         "ResourcePath": "/",
                         "HttpMethod": "GET",
-                        "MetricsEnabled": "true",
+                        "MetricsEnabled": "false",
                         "DataTraceEnabled": "false"
                     },
                     {
