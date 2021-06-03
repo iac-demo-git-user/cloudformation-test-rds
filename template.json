@@ -86,11 +86,7 @@
 
                 },
                 "MonitoringInterval": "60",
-                "MonitoringRoleArn": "arn:aws:iam::1233456789012:role/rds-monitoring-role",
-                "EnableCloudwatchLogsExports":[
-                	"audit",
-                	"error"
-                ]
+                "MonitoringRoleArn": "arn:aws:iam::1233456789012:role/rds-monitoring-role"
             }
         }
     }
