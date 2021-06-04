@@ -33,7 +33,6 @@
       "Properties": {
         "MinSize":"0",
         "MaxSize":"1",
-        "Cooldown" :"350",
         "DesiredCapacity":"1",
         "LaunchTemplate": {
           "LaunchTemplateId": {
