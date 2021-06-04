@@ -1,48 +1,52 @@
 {
-    "Resources": {
-        "Prod": {
-            "Type": "AWS::ApiGateway::Stage",
-            "Properties": {
-                "StageName": "Prod",
-                "Description": "Prod Stage",
-                "RestApiId": {
-                    "Ref": "MyRestApi"
-                },
-                "DeploymentId": {
-                    "Ref": "TestDeployment"
-                },
-                "DocumentationVersion": {
-                    "Ref": "MyDocumentationVersion"
-                },
-                "ClientCertificateId": {
-                    "Ref": "ClientCertificate"
-                },
-                "Variables": {
-                    "Stack": "Prod"
-                },
-                "MethodSettings": [
-                    {
-                        "ResourcePath": "/",
-                        "HttpMethod": "GET",
-                        "MetricsEnabled": "false",
-                        "DataTraceEnabled": "false"
-                    },
-                    {
-                        "ResourcePath": "/stack",
-                        "HttpMethod": "POST",
-                        "MetricsEnabled": "true",
-                        "DataTraceEnabled": "false",
-                        "ThrottlingBurstLimit": "999"
-                    },
-                    {
-                        "ResourcePath": "/stack",
-                        "HttpMethod": "GET",
-                        "MetricsEnabled": "true",
-                        "DataTraceEnabled": "false",
-                        "ThrottlingBurstLimit": "555"
-                    }
-                ]
-            }
-        }
+  "AWSTemplateFormatVersion":"2010-09-09",
+  "Parameters":{
+    "LatestAmiId": {
+      "Description": "Region specific image from the Parameter Store",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+      "Default": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+    },
+    "myLaunchTemplateVersionNumber":{
+      "Type":"String"
+    },
+    "Subnets":{
+      "Type":"CommaDelimitedList"
     }
+  },
+  "Resources":{
+    "myLaunchTemplate":{
+      "Type":"AWS::EC2::LaunchTemplate",
+      "Properties":{
+        "LaunchTemplateData":{
+          "CreditSpecification":{
+            "CpuCredits":"unlimited"
+          },
+          "ImageId":{
+            "Ref":"LatestAmiId"
+          },
+          "InstanceType":"t2.micro"
+        }
+      }
+    },
+    "myASG": {
+      "Type":"AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "MinSize":"0",
+        "MaxSize":"1",
+        "Cooldown" :"350",
+        "DesiredCapacity":"1",
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref":"myLaunchTemplate"
+          },
+          "Version":{
+            "Ref":"myLaunchTemplateVersionNumber"
+          }
+        },
+        "VPCZoneIdentifier":{
+          "Ref":"Subnets"
+        }
+      }
+    }
+  }
 }
