@@ -34,7 +34,7 @@
         "MinSize":"0",
         "MaxSize":"1",
         "DesiredCapacity":"1",
-        "Cooldown" :"0",
+        "Cooldown" :"350",
         "LaunchTemplate": {
           "LaunchTemplateId": {
             "Ref":"myLaunchTemplate"
