@@ -16,7 +16,7 @@
               "Iops" : 200,
               "DeleteOnTermination" : false,
               "VolumeSize" : 20,
-              "Encrypted":true,
+              "Encrypted":false,
             }
           }
           
